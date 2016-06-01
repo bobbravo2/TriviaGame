@@ -62,7 +62,7 @@ $(document).ready(function() {
 		var search = encodeURIComponent(quote.author[randomNum]).replace(/%20/g, '+');
 		console.log(search);
 		$.ajax({
-			url: 'http://api.giphy.com/v1/gifs/search?limit=1&fmt=json&api_key=dc6zaTOxFJmzC&q=' + search,
+			url: 'https://api.giphy.com/v1/gifs/search?limit=1&fmt=json&api_key=dc6zaTOxFJmzC&q=' + search,
 			success: function(data) {
 				pictureURL = data.data[0].images.fixed_height.url;
 			}
