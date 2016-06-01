@@ -7,14 +7,21 @@ $(document).ready(function() {
 			words: [],
 			author: []
 		};
-	var counter = 0;
+	var counterQuotes = 0;
 	var first = true;
 	var interval;
+	var questionNumber=1;
 	var time = 30;
 	var isRunning = false;
 	var randomNum;
 	var pictureURL;
 	var picture;
+	var counterCorrect = 0;
+	var counterIncorrect = 0;
+	var counterUnanswered = 0;
+	var rounds = 10;
+	var colors = ['#16a085', '#27ae60', '#2c3e50', '#f39c12', '#e74c3c', '#9b59b6', '#FB6964', '#342224', "#472E32", "#BDBB99", "#77B1A9", "#73A857"];
+	var numColor
 
 	// Get quotes
 	function generateFourQuotes() {
@@ -29,15 +36,22 @@ $(document).ready(function() {
 			success: function(data) {
 				quoteLoading.words.push(data.quote);
 				quoteLoading.author.push(data.author);
-				counter++;
-				if (counter < 4) generateFourQuotes();
+				counterQuotes++;
+				if (counterQuotes < 4) generateFourQuotes();
 				else {
-					console.log(quoteLoading.words);
-					console.log(quoteLoading.author);
 					if (first) {
 						first = false;
-						$('.holder').append('<button class="start">Start</button>');
-						$('.start').on('click',start);
+						$('header').append('<button class="start">Start</button>');
+						$('.start').css({
+							'background-color': colors[numColor],
+							'border-color': colors[numColor]
+						});
+						$('.start').on('click',function() {
+							$('.start').off('click');
+							animateTextAll();
+							animateColor();
+							setTimeout(start,500);
+						});
 					}
 				}
 			}
@@ -56,23 +70,35 @@ $(document).ready(function() {
 	}
 	function selection(correct) {
 		// Turn off click
-		$('.holder').off('click', 'a');
+		$('.answers').off('click', 'a');
 		// Clear timer interval and change is running
 		clearInterval(interval);
 		isRunning = false;
 		// Remove all questions and answer
-		$('.holder').children().remove();
-		if (correct) {
+		$('.question').remove();
+		$('.answers').remove();
+		// Show proper text for each situation
+		if (correct == 'true') {
+			counterCorrect++;
 			$('.holder').append('<h1>Correct!</h1>');
-		} else {
+		} else if (correct == 'false') {
+			counterIncorrect++;
 			$('.holder').append('<h1>Incorrect!</h1>');
+			$('.holder').append('<h2>The Correct Answer was: ' + quote.author[randomNum] + '</h2>');
+		} else {
+			counterUnanswered++;
+			$('.holder').append('<h1>Time is Up!</h1>');
 			$('.holder').append('<h2>The Correct Answer was: ' + quote.author[randomNum] + '</h2>');
 		}
 		$('.holder').append('<img src="' + pictureURL + '">');
 		// Erase picture after 3 seconds
-		picture = setInterval(erase,5000);
-		// Load reset counter and new quotes
-		counter = 0;
+		picture = setInterval(function() {
+			animateTextAll();
+			animateColor();
+			setTimeout(erase,500);
+		},4000);
+		// Load reset counterQuotes and new quotes
+		counterQuotes = 0;
 		generateFourQuotes();
 	}
 	function erase() {
@@ -80,42 +106,76 @@ $(document).ready(function() {
 		clearInterval(picture);
 		// Clear holder
 		$('.holder').empty();
-		// Reset timer
-		time = 30;
-		$('.holder').append('<div class="timer">Time Remaining: ' + time + '</div>');
-		if (!isRunning) {
-			timer();
+		// Check the rounds
+		if (counterCorrect+counterIncorrect+counterUnanswered < rounds) {
+			// Change question number
+			questionNumber++;
+			$('.holder').append('<div class="number">Quote: ' + questionNumber + '</div>');
+			// Reset timer
+			time = 30;
+			$('.holder').append('<div class="timer">Time Remaining: ' + time + '</div>');
+			if (!isRunning) {
+				timer();
+			}
+			// Readd question and answers divs
+			$('.holder').append('<div class="question"></div>');
+			$('.holder').append('<div class="answers"></div>');
+			// Show new questions
+			show();
+		} else {
+			$('.holder').append('<h1>All done, here\'s how you did!</h1>');
+			$('.holder').append('<h2>Correct Answers: ' + counterCorrect + '</h2>');
+			$('.holder').append('<h2>Incorrect Answers: ' + counterIncorrect + '</h2>');
+			$('.holder').append('<h2>Unanswered: ' + counterUnanswered + '</h2>');
+			$('.holder').append('<button class="start">Start Over?</button>');
+			$('.start').css({
+				'background-color': colors[numColor],
+				'border-color': colors[numColor]
+			});
+			// Reset counters
+			counterCorrect = 0;
+			counterIncorrect = 0;
+			counterUnanswered = 0;
+			// Allow player to restart
+			$('.start').on('click',function() {
+				// Turn off click so multiple starts doesn't happen
+				$('.start').off('click');
+				animateTextAll();
+				setTimeout(start,500);
+			});
 		}
-		// Show new questions
-		show();
 	}
 	function show() {
 		// Copy quotes over
 		quote = quoteLoading;
-		// Erase quote loading and counter
+		// Erase quote loading
 		quoteLoading = {
 			words: [],
 			author: []
 		};
-		/*// Load reset counter and new quotes
-		counter = 0;
-		generateFourQuotes();*/
 		// Select random quote of the four
 		randomNum = Math.floor((Math.random()*3)+1);
 		// Ajax request for picture
 		generateGiphy();
 		// Show random quote
-		$('.holder').append('<p>"' + quote.words[randomNum] + '"</p>');
+		$('.question').append('<p><i class="fa fa-quote-left"></i> ' + quote.words[randomNum] + ' <i class="fa fa-quote-right"></i></p>');
 		// Show all the of authors
 		for (var i=0; i<quote.words.length; i++) {
-			$('.holder').append('<a data-num="' + i + '">' + quote.author[i] + '</a>');
+			$('.answers').append('<a data-num="' + i + '">' + quote.author[i] + '</a>');
 		}
 		// Start click handler for selection
-		$('.holder').on('click', 'a', function() {
+		$('.answers').on('click', 'a', function() {
+			$('.answers').off('click', 'a');
 			if ($(this).attr('data-num') == randomNum) {
-				selection(true);
+				animateTextNot();
+				setTimeout(function() {
+					selection("true")
+				},500);
 			} else {
-				selection(false);
+				animateTextNot();
+				setTimeout(function() {
+					selection("false")
+				},500);
 			}
 		});
 	}
@@ -127,25 +187,73 @@ $(document).ready(function() {
 			if (time == 0) {
 				clearInterval(interval);
 				isRunning = false;
-				$('.timer').text('Time is up!');
+				selection("time");
 			}
 		}, 1000);
 	}
 	function start() {
-		// Turn off click so multiple starts doesn't happen
-		$('.start').off('click');
-		// Remove start button
-		$('.start').remove();
+    // Remove start button beginning
+		$('header').remove();
+		// Remove start button end
+		$('.holder').empty();
+		// Add the question number
+		$('.holder').append('<div class="number"></div>');
 		// Add the time
-		$('.holder').append('<div class="timer">Time Remaining: ' + time + '</div>');
+		$('.holder').append('<div class="timer"></div>');
+		// Add questions
+		$('.holder').append('<div class="question"></div>');
+		// Add answers
+		$('.holder').append('<div class="answers"></div>');
+		// Show the question number
+		$('.number').text('Quote: ' + questionNumber);
+    // Show the time
+		$('.timer').text('Time Remaining: ' + time);
+		// Reset timer
+		time = 30;
+		$('.timer').text('Time Remaining: ' + time);
+		// Start timer
 		if (!isRunning) {
 			timer();
 		}
-		// Show the quotes
+    // Show the quotes
 		show();
 	}
 	
 	// Start with first request for quotes
 	generateFourQuotes();
+
+	// Animation
+	function animateTextAll() {
+		$(".holder").animate({
+	    opacity: 0
+	  }, 500, function() {
+	  	$(this).animate({
+	      opacity: 1
+	    }, 500);
+	  });
+	}
+	function animateTextNot() {
+		$(".holder>*:not(.number):not(.timer)").animate({
+	    opacity: 0
+	  }, 500, function() {
+	  	$(this).animate({
+	      opacity: 1
+	    }, 500);
+	  });
+	}
+
+	function animateColor() {
+		numColor = Math.floor((Math.random() * colors.length)+1);
+		$('body').animate({
+			backgroundColor: colors[numColor],
+		  color: colors[numColor]
+		}, 1000);
+		$('.question').animate({
+			borderBottomColor: colors[numColor]
+		}, 1000);
+		$('a:hover').animate({
+			outlineColor: colors[numColor]
+		}, 1000);
+	}
 
 });
