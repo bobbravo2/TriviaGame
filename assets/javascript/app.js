@@ -34,9 +34,16 @@ $(document).ready(function() {
 			url: 'https://andruxnet-random-famous-quotes.p.mashape.com/?cat=movies',
 			dataType: 'json',
 			success: function(data) {
-				quoteLoading.words.push(data.quote);
-				quoteLoading.author.push(data.author);
-				counterQuotes++;
+				repeatedQuote: {
+					for(var i=0; i<quoteLoading.author.length; i++) {
+						if (data.author == quoteLoading.author[i]) {
+							break repeatedQuote;
+						}
+					}
+					quoteLoading.words.push(data.quote);
+					quoteLoading.author.push(data.author);
+					counterQuotes++;
+				}
 				if (counterQuotes < 4) generateFourQuotes();
 				else {
 					if (first) {
@@ -46,8 +53,8 @@ $(document).ready(function() {
 							'background-color': colors[numColor],
 							'border-color': colors[numColor]
 						});
-						$('.start').on('click',function() {
-							$('.start').off('click');
+						$('.start').on('mousedown',function() {
+							$('.start').off('mousedown');
 							animateTextAll();
 							animateColor();
 							setTimeout(start,500);
@@ -70,7 +77,7 @@ $(document).ready(function() {
 	}
 	function selection(correct) {
 		// Turn off click
-		$('.answers').off('click', 'a');
+		$('.answers').off('mousedown', 'a');
 		// Clear timer interval and change is running
 		clearInterval(interval);
 		isRunning = false;
@@ -115,7 +122,7 @@ $(document).ready(function() {
 			time = 30;
 			$('.holder').append('<div class="timer">Time Remaining: ' + time + '</div>');
 			if (!isRunning) {
-				timer();
+				//timer();
 			}
 			// Readd question and answers divs
 			$('.holder').append('<div class="question"></div>');
@@ -137,9 +144,9 @@ $(document).ready(function() {
 			counterIncorrect = 0;
 			counterUnanswered = 0;
 			// Allow player to restart
-			$('.start').on('click',function() {
+			$('.start').on('mousedown',function() {
 				// Turn off click so multiple starts doesn't happen
-				$('.start').off('click');
+				$('.start').off('mousedown');
 				animateTextAll();
 				setTimeout(start,500);
 			});
@@ -164,8 +171,8 @@ $(document).ready(function() {
 			$('.answers').append('<a data-num="' + i + '">' + quote.author[i] + '</a>');
 		}
 		// Start click handler for selection
-		$('.answers').on('click', 'a', function() {
-			$('.answers').off('click', 'a');
+		$('.answers').on('mousedown', 'a', function() {
+			$('.answers').off('mousedown', 'a');
 			if ($(this).attr('data-num') == randomNum) {
 				animateTextNot();
 				setTimeout(function() {
