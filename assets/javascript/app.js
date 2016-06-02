@@ -36,7 +36,7 @@ $(document).ready(function() {
 			success: function(data) {
 				repeatedQuote: {
 					for(var i=0; i<quoteLoading.author.length; i++) {
-						if (data.author == quoteLoading.author[i] || data.author = 'Umberto Eco') {
+						if (data.author == quoteLoading.author[i] || data.author == 'Umberto Eco') {
 							break repeatedQuote;
 						}
 					}
