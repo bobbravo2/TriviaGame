@@ -122,7 +122,7 @@ $(document).ready(function() {
 			time = 30;
 			$('.holder').append('<div class="timer">Time Remaining: ' + time + '</div>');
 			if (!isRunning) {
-				//timer();
+				timer();
 			}
 			// Readd question and answers divs
 			$('.holder').append('<div class="question"></div>');
