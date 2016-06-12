@@ -21,7 +21,7 @@ $(document).ready(function() {
 	var counterUnanswered = 0;
 	var rounds = 10;
 	var colors = ['#16a085', '#27ae60', '#2c3e50', '#f39c12', '#e74c3c', '#9b59b6', '#FB6964', '#342224', "#472E32", "#BDBB99", "#77B1A9", "#73A857"];
-	var numColor
+	var numColor;
 
 	// Get quotes
 	function generateFourQuotes() {
@@ -59,6 +59,10 @@ $(document).ready(function() {
 							animateColor();
 							setTimeout(start,500);
 						});
+					} else {
+						animateTextAll();
+						animateColor();
+						setTimeout(erase,500);
 					}
 				}
 			}
@@ -72,6 +76,18 @@ $(document).ready(function() {
 			url: 'https://api.giphy.com/v1/gifs/search?limit=1&fmt=json&api_key=dc6zaTOxFJmzC&q=' + search,
 			success: function(data) {
 				pictureURL = data.data[0].images.fixed_height.url;
+				// Show answer
+				if ($(this).attr('data-num') == randomNum) {
+					animateTextNot();
+					setTimeout(function() {
+						selection("true")
+					},500);
+				} else {
+					animateTextNot();
+					setTimeout(function() {
+						selection("false")
+					},500);
+				}
 			}
 		});
 	}
@@ -97,16 +113,16 @@ $(document).ready(function() {
 			$('.holder').append('<h1>Time is Up!</h1>');
 			$('.holder').append('<h2>The Correct Answer was: ' + quote.author[randomNum] + '</h2>');
 		}
-		$('.holder').append('<img src="' + pictureURL + '">');
-		// Erase picture after 3 seconds
-		picture = setInterval(function() {
-			animateTextAll();
-			animateColor();
-			setTimeout(erase,500);
-		},4000);
-		// Load reset counterQuotes and new quotes
-		counterQuotes = 0;
-		generateFourQuotes();
+		$('.holder').append('<img id="img-load" src="' + pictureURL + '">');
+		// Wait for picture to load
+		$('#img-load').load(function() {
+			// Erase picture after 4 seconds
+			picture = setInterval(function() {
+				// Load reset counterQuotes and new quotes
+				counterQuotes = 0;
+				generateFourQuotes();
+			},4000);
+		});
 	}
 	function erase() {
 		// Clear interval
@@ -162,8 +178,10 @@ $(document).ready(function() {
 		};
 		// Select random quote of the four
 		randomNum = Math.floor((Math.random()*3)+1);
+
 		// Ajax request for picture
-		generateGiphy();
+		//generateGiphy();
+		
 		// Show random quote
 		$('.question').append('<p><i class="fa fa-quote-left"></i> ' + quote.words[randomNum] + ' <i class="fa fa-quote-right"></i></p>');
 		// Show all the of authors
@@ -173,7 +191,11 @@ $(document).ready(function() {
 		// Start click handler for selection
 		$('.answers').on('mousedown', 'a', function() {
 			$('.answers').off('mousedown', 'a');
-			if ($(this).attr('data-num') == randomNum) {
+
+			// Ajax request for picture
+			generateGiphy(randomNum);
+
+	/*		if ($(this).attr('data-num') == randomNum) {
 				animateTextNot();
 				setTimeout(function() {
 					selection("true")
@@ -184,6 +206,7 @@ $(document).ready(function() {
 					selection("false")
 				},500);
 			}
+	*/
 		});
 	}
 	function timer() {
