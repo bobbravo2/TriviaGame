@@ -69,15 +69,14 @@ $(document).ready(function() {
 		});
 	}
 	// Get giphy
-	function generateGiphy() {
+	function generateGiphy(randomNum, $this) {
 		var search = encodeURIComponent(quote.author[randomNum]).replace(/%20/g, '+');
-		console.log(search);
 		$.ajax({
 			url: 'https://api.giphy.com/v1/gifs/search?limit=1&fmt=json&api_key=dc6zaTOxFJmzC&q=' + search,
 			success: function(data) {
 				pictureURL = data.data[0].images.fixed_height.url;
 				// Show answer
-				if ($(this).attr('data-num') == randomNum) {
+				if ($this.attr('data-num') == randomNum) {
 					animateTextNot();
 					setTimeout(function() {
 						selection("true")
@@ -178,10 +177,6 @@ $(document).ready(function() {
 		};
 		// Select random quote of the four
 		randomNum = Math.floor((Math.random()*3)+1);
-
-		// Ajax request for picture
-		//generateGiphy();
-		
 		// Show random quote
 		$('.question').append('<p><i class="fa fa-quote-left"></i> ' + quote.words[randomNum] + ' <i class="fa fa-quote-right"></i></p>');
 		// Show all the of authors
@@ -191,22 +186,9 @@ $(document).ready(function() {
 		// Start click handler for selection
 		$('.answers').on('mousedown', 'a', function() {
 			$('.answers').off('mousedown', 'a');
-
 			// Ajax request for picture
-			generateGiphy(randomNum);
-
-	/*		if ($(this).attr('data-num') == randomNum) {
-				animateTextNot();
-				setTimeout(function() {
-					selection("true")
-				},500);
-			} else {
-				animateTextNot();
-				setTimeout(function() {
-					selection("false")
-				},500);
-			}
-	*/
+			var $this = $(this);
+			generateGiphy(randomNum, $this);
 		});
 	}
 	function timer() {
