@@ -6,7 +6,7 @@ LIVE PREVIEW --> https://famous-quote-trivia.herokuapp.com/
 ## Screenshots
 
 Main
--------------
+------
 ![Main Image](/readme_images/main.png?raw=true"main.png")
 
 Question | Correct
